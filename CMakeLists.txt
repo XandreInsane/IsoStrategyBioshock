@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.20)
+project(RaptureDreamOfTheDeep VERSION 0.8.1 LANGUAGES C)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+find_package(raylib CONFIG REQUIRED)
+
+add_executable(rapture
+    src/main.c
+    src/simulation.c
+    src/render.c
+)
+target_include_directories(rapture PRIVATE src)
+target_link_libraries(rapture PRIVATE raylib)
+if (NOT WIN32)
+    target_link_libraries(rapture PRIVATE m)
+endif()
+if (WIN32)
+    target_compile_definitions(rapture PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+if (MSVC)
+    target_compile_options(rapture PRIVATE /W4)
+else()
+    target_compile_options(rapture PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversion)
+endif()
+
+include(CTest)
+if (BUILD_TESTING)
+    add_executable(rapture_sim_tests tests/test_simulation.c src/simulation.c)
+    target_include_directories(rapture_sim_tests PRIVATE src)
+    if (NOT WIN32)
+        target_link_libraries(rapture_sim_tests PRIVATE m)
+    endif()
+    if (WIN32)
+        target_compile_definitions(rapture_sim_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+    if (MSVC)
+        target_compile_options(rapture_sim_tests PRIVATE /W4 /UNDEBUG)
+    else()
+        target_compile_options(rapture_sim_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    endif()
+    add_test(NAME simulation COMMAND rapture_sim_tests)
+endif()
